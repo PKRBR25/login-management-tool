@@ -107,34 +107,45 @@ export function formatDateToNow(date: Date): string {
   // Less than an hour
   const diffInMinutes = Math.floor(diffInSeconds / 60);
   if (diffInMinutes < 60) {
-    return `${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'} ago`;
+    return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
   }
 
   // Less than a day
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) {
-    return `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`;
+    return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
   }
 
   // Less than a week
   const diffInDays = Math.floor(diffInHours / 24);
   if (diffInDays < 7) {
-    return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+    return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
   }
 
   // Less than a month
   const diffInWeeks = Math.floor(diffInDays / 7);
   if (diffInWeeks < 4) {
-    return `${diffInWeeks} ${diffInWeeks === 1 ? 'week' : 'weeks'} ago`;
+    return `${diffInWeeks} week${diffInWeeks === 1 ? '' : 's'} ago`;
   }
 
   // Less than a year
   const diffInMonths = Math.floor(diffInDays / 30);
   if (diffInMonths < 12) {
-    return `${diffInMonths} ${diffInMonths === 1 ? 'month' : 'months'} ago`;
+    return `${diffInMonths} month${diffInMonths === 1 ? '' : 's'} ago`;
   }
 
   // Years
   const diffInYears = Math.floor(diffInDays / 365);
-  return `${diffInYears} ${diffInYears === 1 ? 'year' : 'years'} ago`;
+  return `${diffInYears} year${diffInYears === 1 ? '' : 's'} ago`;
+}
+
+/**
+ * Generates a random numeric token of specified length
+ * @param length - Length of the token (default: 6)
+ * @returns A string containing random digits
+ */
+export function generateRandomToken(length: number = 6): string {
+  const min = Math.pow(10, length - 1);
+  const max = Math.pow(10, length) - 1;
+  return Math.floor(min + Math.random() * (max - min + 1)).toString();
 }

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test-email": "ts-node -r dotenv/config src/lib/email/test-email.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.9.1",
@@ -18,10 +19,13 @@
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.5.0",
     "lucide-react": "^0.512.0",
     "next": "^15.3.3",
     "next-auth": "^4.24.11",
     "nodemailer": "^6.10.1",
+    "pg": "^8.16.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.57.0",
@@ -33,11 +37,12 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
-    "@types/node": "^22.15.29",
+    "@types/node": "^22.15.30",
     "@types/nodemailer": "^6.4.17",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
     "prisma": "^6.9.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
   "main": "next.config.js",
