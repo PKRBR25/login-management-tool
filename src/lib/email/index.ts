@@ -142,7 +142,7 @@ export async function sendVerificationEmail(
           </div>
           
           <div class="footer">
-              <p>© ${currentYear} ${companyName}. All rights reserved.</p>
+              <p> ${currentYear} ${companyName}. All rights reserved.</p>
               <p>
                   <a href="#" style="color: #4F46E5; text-decoration: none;">Privacy Policy</a> | 
                   <a href="#" style="color: #4F46E5; text-decoration: none;">Terms of Service</a>
@@ -204,20 +204,24 @@ export async function sendVerificationEmail(
 
 export async function sendPasswordResetEmail(
   to: string,
-  resetToken: number,
+  resetToken: string,
   fullName: string = 'User'
 ) {
+  const currentYear = new Date().getFullYear();
+  const companyName = 'Login Management Tool';
+  const baseUrl = 'https://yourdomain.com';
+
   const mailOptions = {
-    from: `"Login Management" <${process.env.EMAIL_USERNAME}>`,
+    from: `"${companyName}" <${emailUsername}>`,
     to,
-    subject: 'Password Reset Request',
+    subject: 'Reset Your Password',
     html: `
       <!DOCTYPE html>
       <html lang="en">
       <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Password Reset</title>
+          <title>Reset Your Password</title>
           <style>
               body {
                   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -240,17 +244,20 @@ export async function sendPasswordResetEmail(
               .content {
                   padding: 0 20px;
               }
-              .reset-code {
+              .code {
                   font-family: monospace;
-                  font-size: 28px;
-                  letter-spacing: 4px;
+                  font-size: 24px;
+                  letter-spacing: 2px;
                   background-color: #f5f5f5;
-                  padding: 15px 25px;
-                  border-radius: 6px;
-                  margin: 25px 0;
+                  padding: 10px 20px;
+                  border-radius: 4px;
+                  margin: 20px 0;
                   display: inline-block;
-                  font-weight: bold;
-                  color: #4F46E5;
+              }
+              .expiry-note {
+                  color: #666666;
+                  font-size: 14px;
+                  font-style: italic;
               }
               .footer {
                   margin-top: 40px;
@@ -260,47 +267,47 @@ export async function sendPasswordResetEmail(
                   color: #666666;
                   text-align: center;
               }
-              .expiry-note {
-                  color: #666666;
-                  font-size: 14px;
-                  font-style: italic;
-                  margin-top: 10px;
-              }
-              .button {
-                  display: inline-block;
-                  padding: 12px 30px;
-                  background-color: #4F46E5;
-                  color: white !important;
-                  text-decoration: none;
-                  border-radius: 6px;
-                  font-weight: 600;
-                  margin: 25px 0;
-              }
           </style>
       </head>
       <body>
           <div class="header">
-              <h1>Password Reset</h1>
+              <img src="${baseUrl}/logo.png" alt="${companyName} Logo" class="logo">
           </div>
           
           <div class="content">
-              <p>Hello <strong>${fullName}</strong>,</p>
-              <p>We received a request to reset your password. Please use the following verification code to proceed:</p>
+              <h2>Reset Your Password</h2>
               
-              <div class="reset-code">
-                  ${resetToken}
-              </div>
+              <p>Hello <strong>${fullName || 'User'}</strong>,</p>
+              
+              <p>We received a request to reset the password for your account. Use the following verification code to proceed:</p>
+              
+              <div class="code">${resetToken}</div>
               
               <p class="expiry-note">This code will expire in 15 minutes.</p>
               
-              <p>If you didn't request a password reset, you can safely ignore this email.</p>
+              <p>If you didn't request this password reset, you can safely ignore this email. Your password will remain unchanged.</p>
               
-              <p>Best regards,<br>Login Management Team</p>
+              <p>For security reasons, please don't share this code with anyone. Our support team will never ask you for this code.</p>
+              
+              <p>Need help? Contact our support team at <a href="mailto:support@${process.env.NEXT_PUBLIC_APP_DOMAIN || 'yourdomain.com'}" style="color: #4F46E5; text-decoration: none;">support@${process.env.NEXT_PUBLIC_APP_DOMAIN || 'yourdomain.com'}</a></p>
+              
+              <p>Best regards,<br>The ${companyName} Team</p>
           </div>
           
           <div class="footer">
-              <p> ${new Date().getFullYear()} Login Management. All rights reserved.</p>
-              <p>This is an automated message, please do not reply to this email.</p>
+              <p> ${currentYear} ${companyName}. All rights reserved.</p>
+              <p>
+                  <a href="${baseUrl}/privacy-policy" style="color: #4F46E5; text-decoration: none;">Privacy Policy</a> | 
+                  <a href="${baseUrl}/terms" style="color: #4F46E5; text-decoration: none;">Terms of Service</a>
+              </p>
+              <p>
+                  ${process.env.NEXT_PUBLIC_COMPANY_ADDRESS_LINE1 || '123 Company St'}<br>
+                  ${process.env.NEXT_PUBLIC_COMPANY_ADDRESS_LINE2 || 'City, State, ZIP'}
+              </p>
+              <p>
+                  <a href="${baseUrl}/unsubscribe?email=${encodeURIComponent(to)}" style="color: #666666; text-decoration: underline;">Unsubscribe</a> | 
+                  <a href="${baseUrl}/preferences" style="color: #666666; text-decoration: underline;">Email Preferences</a>
+              </p>
           </div>
       </body>
       </html>

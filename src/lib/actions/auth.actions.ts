@@ -8,7 +8,8 @@ import {
   resetPasswordSchema 
 } from '@/lib/validations/auth';
 import { sendVerificationEmail } from '@/lib/email/index';
-import { sendPasswordResetEmail } from '@/lib/email';
+import { sendPasswordResetEmail } from '@/lib/email/index';
+
 import * as bcrypt from 'bcryptjs';
 import { addHours } from 'date-fns';
 
@@ -167,4 +168,174 @@ export async function signUp(prevState: SignUpState | null, formData: FormData):
   }
 }
 
-// Rest of the file remains unchanged...
+interface RequestPasswordResetState {
+  success: boolean;
+  message: string;
+  errors?: {
+    email?: string[];
+  };
+  details?: string;
+  code?: string;
+  stack?: string;
+}
+
+interface EmailResult {
+  success: boolean;
+  messageId?: string;
+  error?: string;
+  details?: string;
+  code?: string;
+  stack?: string;
+}
+
+export async function requestPasswordReset(
+  prevState: RequestPasswordResetState | null, 
+  formData: FormData
+): Promise<RequestPasswordResetState> {
+  console.log('🔹 Starting password reset request...');
+  
+  try {
+    // Get the email from form data
+    const email = formData.get('email');
+    console.log('🔹 Email from form data:', email);
+    
+    // Validate the email
+    if (typeof email !== 'string') {
+      console.error('❌ Invalid email type:', typeof email);
+      return { 
+        success: false, 
+        message: 'Invalid email format',
+        errors: { email: ['Please provide a valid email address'] } 
+      };
+    }
+    
+    // Validate against the schema
+    const validation = requestPasswordResetSchema.safeParse({ email });
+    if (!validation.success) {
+      console.error('❌ Validation failed:', validation.error.format());
+      return { 
+        success: false, 
+        message: 'Validation failed',
+        errors: {
+          email: validation.error.formErrors.fieldErrors.email || []
+        }
+      };
+    }
+    
+    console.log('🔹 Looking up user with email:', email);
+    
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { 
+        id: true, 
+        email: true,
+        full_name: true 
+      },
+    });
+    
+    console.log('🔹 User lookup result:', user ? `Found user ${user.id}` : 'Not found');
+    
+    // Return success even if user doesn't exist to prevent user enumeration
+    if (!user) {
+      console.log('ℹ️ No user found with email (this is expected behavior for security)');
+      return { 
+        success: true, 
+        message: 'If an account with that email exists, you will receive a password reset link.' 
+      };
+    }
+    
+    console.log('🔹 Generating reset token for user:', user.id);
+    
+    try {
+      // Generate a 6-digit reset token
+      const resetToken = Math.floor(100000 + Math.random() * 900000);
+      const now = new Date();
+      const tokenExpires = addHours(now, 1); // Token expires in 1 hour
+      const tokenLockedUntil = new Date(now.getTime() + 5 * 60 * 1000); // 5 minute lockout
+      const tokenValidUntil = addHours(now, 24); // Token valid for 24 hours
+      
+      console.log('🔹 Creating password reset record with token:', resetToken);
+      
+      // Store the token in the database
+      await prisma.passwordReset.create({
+        data: {
+          user_id: user.id,
+          pr_token: resetToken,
+          pr_token_expires_at: tokenExpires,
+          pr_token_locked_until: tokenLockedUntil,
+          pr_token_valid_until: tokenValidUntil,
+        },
+      });
+      
+      console.log('🔹 Sending password reset email...');
+      const emailResult = await sendPasswordResetEmail(
+        user.email,
+        resetToken.toString(),
+        user.full_name || 'User'
+      ) as { success: boolean; messageId?: string; error?: string };
+
+      if (!emailResult.success) {
+        console.error('❌ Failed to send password reset email:', emailResult.error);
+        return {
+          success: false,
+          message: emailResult.error || 'Failed to send password reset email. Please try again later.'
+        };
+      }
+
+      console.log('✅ Password reset email sent successfully');
+      
+      return {
+        success: true,
+        message: 'If an account with that email exists, you will receive a password reset link.'
+      };
+
+      
+    } catch (error) {
+      console.error('❌ Error in requestPasswordReset:', error);
+      
+      let errorMessage = 'Failed to process your password reset request. Please try again later.';
+      
+      if ((error as any)?.code === 'EAUTH') {
+        errorMessage = 'Authentication with the email service failed. Please contact support.';
+      } else if ((error as any)?.code === 'EENVELOPE') {
+        errorMessage = 'Invalid email address. Please check the email and try again.';
+      } else if ((error as any)?.code === 'ECONNECTION' || (error as any)?.code === 'ETIMEDOUT') {
+        errorMessage = 'Could not connect to the email server. Please check your internet connection and try again.';
+      } else if ((error as any)?.code === 'ESOCKET' || (error as any)?.code === 'SELF_SIGNED_CERT_IN_CHAIN') {
+        errorMessage = 'Connection to the email server failed. This might be a temporary issue. Please try again later.';
+      }
+      
+      return {
+        success: false,
+        message: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+      };
+    }
+    
+  } catch (error) {
+    // Create a more detailed error object
+    const errorObj = error instanceof Error ? {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      // Include any additional properties that might be on the error
+      ...(error as any)
+    } : {
+      type: typeof error,
+      value: error
+    };
+    
+    console.error('❌ Unexpected error in requestPasswordReset:', errorObj);
+    
+    // Return a string that includes the error message for the client
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : typeof error === 'string' 
+        ? error 
+        : 'An unexpected error occurred. Please try again.';
+    
+    // Throw a new error that will be caught by the client
+    throw new Error(errorMessage);
+  }
+}

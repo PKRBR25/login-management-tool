@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db/prisma';
-import { generateRandomToken } from '@/lib/utils';
-import { sendPasswordResetEmail } from '@/lib/email';
+import { sendPasswordResetEmail } from '@/lib/email/index';
 const bcrypt = require('bcryptjs');
+
+// Generate a random numeric token of specified length
+function generateRandomToken(length: number = 6): string {
+  const min = Math.pow(10, length - 1);
+  const max = Math.pow(10, length) - 1;
+  return Math.floor(min + Math.random() * (max - min + 1)).toString();
+}
 
 export async function POST(request: Request) {
   try {
