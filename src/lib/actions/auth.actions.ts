@@ -13,7 +13,7 @@ import { sendPasswordResetEmail } from '@/lib/email/index';
 import * as bcrypt from 'bcryptjs';
 import { addHours } from 'date-fns';
 
-interface SignUpState {
+export interface SignUpState {
   message: string;
   errors: Record<string, string[]>;
   success: boolean;
@@ -337,5 +337,105 @@ export async function requestPasswordReset(
     
     // Throw a new error that will be caught by the client
     throw new Error(errorMessage);
+  }
+}
+
+interface ResetPasswordState {
+  success: boolean;
+  message: string;
+  errors?: {
+    token?: string[];
+    password?: string[];
+    confirmPassword?: string[];
+  };
+  details?: string;
+}
+
+export async function resetPassword(
+  prevState: ResetPasswordState | null,
+  formData: FormData
+): Promise<ResetPasswordState> {
+  try {
+    // Extract token from URL or form data
+    const token = formData.get('token') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
+
+    // Basic validation
+    if (!token) {
+      return {
+        success: false,
+        message: 'Invalid or expired reset token',
+        errors: { token: ['Reset token is required'] }
+      };
+    }
+
+    if (password !== confirmPassword) {
+      return {
+        success: false,
+        message: 'Passwords do not match',
+        errors: { confirmPassword: ['Passwords do not match'] }
+      };
+    }
+
+    // Find the user by email
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        password_resets: {
+          where: {
+            pr_token: parseInt(token),
+            pr_token_valid_until: {
+              gt: new Date() // Token hasn't expired
+            }
+          },
+          orderBy: {
+            created_at: 'desc' // Get the most recent reset token
+          },
+          take: 1
+        }
+      }
+    });
+
+    const resetRecord = user?.password_resets[0];
+
+    if (!resetRecord) {
+      return {
+        success: false,
+        message: 'Invalid or expired reset token',
+        errors: { token: ['Invalid or expired reset token'] }
+      };
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hashSync(password, 12);
+
+    // Update the user's password
+    await prisma.user.update({
+      where: { email },
+      data: {
+        hashed_password: hashedPassword
+      }
+    });
+
+    // Delete the used reset token
+    await prisma.passwordReset.delete({
+      where: { id: resetRecord.id }
+    });
+
+    return {
+      success: true,
+      message: 'Your password has been reset successfully. You can now log in with your new password.'
+    };
+
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    
+    return {
+      success: false,
+      message: 'An error occurred while resetting your password. Please try again.',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    };
   }
 }

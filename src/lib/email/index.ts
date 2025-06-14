@@ -1,13 +1,13 @@
 import nodemailer from 'nodemailer';
 require('dotenv').config({ path: '.env.local' });
 
-const emailUsername = process.env.EMAIL_USERNAME;
-const emailPassword = process.env.EMAIL_PASSWORD;
+const emailUsername = process.env.GMAIL_EMAIL;
+const emailPassword = process.env.GMAIL_APP_PASSWORD;
 
 if (!emailUsername || !emailPassword) {
   console.error('❌ Email configuration error:');
-  console.error('- EMAIL_USERNAME:', emailUsername ? 'Set' : 'Not set');
-  console.error('- EMAIL_PASSWORD:', emailPassword ? 'Set' : 'Not set');
+  console.error('- GMAIL_EMAIL:', emailUsername ? 'Set' : 'Not set');
+  console.error('- GMAIL_APP_PASSWORD:', emailPassword ? 'Set' : 'Not set');
   throw new Error('Email configuration is missing. Please check your .env.local file');
 }
 
@@ -45,6 +45,11 @@ export async function sendVerificationEmail(
   verificationCode: number,
   fullName: string = 'User'
 ) {
+  // Check if environment variables are set
+  console.log('Verification Email - Environment Variables:');
+  console.log('- GMAIL_EMAIL:', emailUsername);
+  console.log('- NODE_ENV:', process.env.NODE_ENV || 'development');
+  console.log('Using email for support:', emailUsername);
   const currentYear = new Date().getFullYear();
   const companyName = 'Login Management Tool';
   const isDevelopment = process.env.NODE_ENV === 'development';
@@ -219,6 +224,11 @@ export async function sendPasswordResetEmail(
   resetToken: string,
   fullName: string = 'User'
 ) {
+  // Check if environment variables are set
+  console.log('Password Reset Email - Environment Variables:');
+  console.log('- GMAIL_EMAIL:', emailUsername);
+  console.log('- NODE_ENV:', process.env.NODE_ENV || 'development');
+  console.log('Using email for password reset support:', emailUsername);
   const currentYear = new Date().getFullYear();
   const companyName = 'Login Management Tool';
   const isDevelopment = process.env.NODE_ENV === 'development';
@@ -312,7 +322,7 @@ export async function sendPasswordResetEmail(
               
               <p>For security reasons, please don't share this code with anyone. Our support team will never ask you for this code.</p>
               
-              <p>Need help? Contact our support team at <a href="mailto:support@${process.env.NEXT_PUBLIC_APP_DOMAIN || 'yourdomain.com'}" style="color: #4F46E5; text-decoration: none;">support@${process.env.NEXT_PUBLIC_APP_DOMAIN || 'yourdomain.com'}</a></p>
+              <p>Need help? Contact our support team at <a href="mailto:${emailUsername}" style="color: #4F46E5; text-decoration: none;">${emailUsername}</a></p>
               
               <p>Best regards,<br>The ${companyName} Team</p>
           </div>
