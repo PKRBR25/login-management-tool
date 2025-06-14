@@ -47,6 +47,10 @@ export async function sendVerificationEmail(
 ) {
   const currentYear = new Date().getFullYear();
   const companyName = 'Login Management Tool';
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const baseUrl = isDevelopment 
+    ? 'http://localhost:3000' 
+    : `https://${process.env.NEXT_PUBLIC_APP_DOMAIN || 'yourdomain.com'}`;
   
   const mailOptions = {
     from: `"${companyName}" <${emailUsername}>`,
@@ -118,7 +122,7 @@ export async function sendVerificationEmail(
       </head>
       <body>
           <div class="header">
-              <img src="https://yourdomain.com/logo.png" alt="${companyName}" class="logo">
+              <img src="${baseUrl}/logo.png" alt="${companyName}" class="logo">
           </div>
           
           <div class="content">
@@ -126,11 +130,19 @@ export async function sendVerificationEmail(
               
               <p>Hello <strong>${fullName}</strong>,</p>
               
-              <p>Thank you for signing up with ${companyName}! To complete your registration, please verify your email address by entering the following verification code:</p>
+              <p>Thank you for signing up with ${companyName}! Please use the following verification code to complete your registration:</p>
               
               <div class="code">${verificationCode}</div>
               
-              <p class="expiry-note">This code will expire in 15 minutes.</p>
+              <p>You can click the button below to be redirected to the verification page where you should enter this code:</p>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${baseUrl}/verify-email?email=${encodeURIComponent(to)}&code=${verificationCode}" class="button" style="background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+                  Go to Verification
+                </a>
+              </div>
+              
+              <p class="expiry-note">This link and code will expire in 15 minutes.</p>
               
               <p>If you didn't create an account with us, you can safely ignore this email.</p>
               
@@ -144,16 +156,16 @@ export async function sendVerificationEmail(
           <div class="footer">
               <p> ${currentYear} ${companyName}. All rights reserved.</p>
               <p>
-                  <a href="#" style="color: #4F46E5; text-decoration: none;">Privacy Policy</a> | 
-                  <a href="#" style="color: #4F46E5; text-decoration: none;">Terms of Service</a>
+                  <a href="${baseUrl}/privacy-policy" style="color: #4F46E5; text-decoration: none;">Privacy Policy</a> | 
+                  <a href="${baseUrl}/terms" style="color: #4F46E5; text-decoration: none;">Terms of Service</a>
               </p>
               <p>
                   ${companyName} Team<br>
                   Support Team
               </p>
               <p>
-                  <a href="#" style="color: #666666; text-decoration: underline;">Unsubscribe</a> | 
-                  <a href="#" style="color: #666666; text-decoration: underline;">Email Preferences</a>
+                  <a href="${baseUrl}/unsubscribe?email=${encodeURIComponent(to)}" style="color: #666666; text-decoration: underline;">Unsubscribe</a> | 
+                  <a href="${baseUrl}/preferences" style="color: #666666; text-decoration: underline;">Email Preferences</a>
               </p>
           </div>
       </body>
@@ -209,7 +221,10 @@ export async function sendPasswordResetEmail(
 ) {
   const currentYear = new Date().getFullYear();
   const companyName = 'Login Management Tool';
-  const baseUrl = 'https://yourdomain.com';
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const baseUrl = isDevelopment 
+    ? 'http://localhost:3000' 
+    : `https://${process.env.NEXT_PUBLIC_APP_DOMAIN || 'yourdomain.com'}`;
 
   const mailOptions = {
     from: `"${companyName}" <${emailUsername}>`,
@@ -279,11 +294,19 @@ export async function sendPasswordResetEmail(
               
               <p>Hello <strong>${fullName || 'User'}</strong>,</p>
               
-              <p>We received a request to reset the password for your account. Use the following verification code to proceed:</p>
+              <p>We received a request to reset the password for your account. Please use the following verification code to complete the password reset process:</p>
               
               <div class="code">${resetToken}</div>
               
-              <p class="expiry-note">This code will expire in 15 minutes.</p>
+              <p>You can click the button below to be redirected to the password reset page where you should enter this code:</p>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${baseUrl}/reset-password?email=${encodeURIComponent(to)}&token=${resetToken}" class="button" style="background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+                  Go to Password Reset
+                </a>
+              </div>
+              
+              <p class="expiry-note">This link and code will expire in 15 minutes.</p>
               
               <p>If you didn't request this password reset, you can safely ignore this email. Your password will remain unchanged.</p>
               

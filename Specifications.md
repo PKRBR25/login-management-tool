@@ -276,19 +276,27 @@ Components:
 		        
 		        <p>Hello <strong>{{user_full_name}}</strong>,</p>
 		        
-		        <p>Thank you for signing up with {{company_name}}! To complete your registration, please verify your email address by entering the following verification code:</p>
-		        
-		        <div class="code">{{verification_code}}</div>
-		        
-		        <p class="expiry-note">This code will expire in 15 minutes.</p>
-		        
-		        <p>If you didn't create an account with us, you can safely ignore this email.</p>
-		        
-		        <p>For security reasons, please don't share this code with anyone. Our support team will never ask you for this code.</p>
-		        
-		        <p>Need help? Contact our support team at <a href="mailto:support@yourdomain.com">support@yourdomain.com</a></p>
-		        
-		        <p>Welcome aboard!<br>The {{company_name}} Team</p>
+		        <p>Thank you for signing up with {{company_name}}! Please use the following verification code to complete your registration:</p>
+        
+        <div class="code">{{verification_code}}</div>
+        
+        <p>You can click the button below to be redirected to the verification page where you should enter this code:</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="{{verification_url}}?email={{user_email}}&token={{verification_code}}" class="button" style="background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+            Go to Verification
+          </a>
+        </div>
+        
+        <p class="expiry-note">This link and code will expire in 15 minutes.</p>
+        
+        <p>If you didn't create an account with us, you can safely ignore this email.</p>
+        
+        <p>For security reasons, please don't share this code with anyone. Our support team will never ask you for this code.</p>
+        
+        <p>Need help? Contact our support team at <a href="mailto:support@yourdomain.com">support@yourdomain.com</a></p>
+        
+        <p>Welcome aboard!<br>The {{company_name}} Team</p>
 		    </div>
 		    
 		    <div class="footer">
@@ -383,11 +391,21 @@ Components:
 		        
 		        <p>Hello <strong>{{user_full_name}}</strong>,</p>
 		        
-		        <p>We received a request to reset the password for your account. Use the following verification code to proceed:</p>
-		        
-		        <div class="code">{{verification_code}}</div>
-		        
-		        <p class="expiry-note">This code will expire in 15 minutes.</p>
+		        <p>We received a request to reset the password for your account. Please use the following verification code to complete the password reset process:</p>
+        
+        <div class="code">{{verification_code}}</div>
+        
+        <p>You can click the button below to be redirected to the password reset page where you should enter this code:</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="{{reset_password_url}}?email={{user_email}}&token={{verification_code}}" class="button" style="background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+            Go to Password Reset
+          </a>
+        </div>
+        
+        <div class="code">{{verification_code}}</div>
+        
+        <p class="expiry-note">This link and code will expire in 15 minutes.</p>
 		        
 		        <p>If you didn't request this password reset, you can safely ignore this email. Your password will remain unchanged.</p>
 		        
